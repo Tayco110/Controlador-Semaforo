@@ -1,2 +1,2 @@
 # Semaforo
-Trabalho - Microcontroladores
+Sistema para controle de um cruzamento com quatro semáforo
