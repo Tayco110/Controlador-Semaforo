@@ -12,7 +12,7 @@
 .def unidade = r19  ;definimos o registrador 19 como unidade (variável que vai armazenar o valor numérico a ser exibido no display de unidade)
 .def dezena = r20	;definimos o registrador 20 como dezena (variável que vai armazenar o valor numérico a ser exibido no display de dezena)
 
-.cseg 
+.cseg 			;flash
 jmp reset
 .org OC1Aaddr		; A próxima prosição de memória vai ser a da interrupção OC!Aaddr
 jmp OCI1A_Interrupt	; Dentro dessa posição de memória temos um jump para o tratamento que vai ser realizado quando ela ocorrer
