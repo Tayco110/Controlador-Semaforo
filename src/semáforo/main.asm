@@ -12,12 +12,15 @@
 .def unidade = r19  ;definimos o registrador 19 como unidade (variável que vai armazenar o valor numérico a ser exibido no display de unidade)
 .def dezena = r20	;definimos o registrador 20 como dezena (variável que vai armazenar o valor numérico a ser exibido no display de dezena)
 
-.cseg 			;flash
-jmp reset
+;Setando o vetor de interrupção
+.cseg 				;flash
+jmp reset			
 .org OC1Aaddr		; A próxima prosição de memória vai ser a da interrupção OC!Aaddr
 jmp OCI1A_Interrupt	; Dentro dessa posição de memória temos um jump para o tratamento que vai ser realizado quando ela ocorrer
 
 OCI1A_Interrupt:
+
+	;Salvamos o contexto do conteúdo do registrador 16
 	push r16   
 	in r16, SREG   
 	push r16
@@ -27,6 +30,7 @@ OCI1A_Interrupt:
 	; A cada interrupção aumentamos o valor a ser exibido no display de unidade em 1
 	inc unidade
 
+	;Restauramos o contexto do conteúdo do registrador 16
 	pop r16
 	out SREG, r16
 	pop r16
@@ -97,14 +101,22 @@ reset:
 	ldi temp, 0b00111111
 	out DDRB, temp
 
+	;Ligando a flag de interrupção
 	sei
-
+	
+/*	bits:  ###### | ### 
+		semaforos Cores:
+		10000(s1) | 001 (Vermelho)
+		01000(s2) | 010 (Amarelo)
+		00100(s3) | 100 (Verde)
+		00010(s4)
+		00001(sP)	*/		
 
 	s1: ;label que representa o estado 1	
 		ldi count, 18; tempo que vamos pasar dentro do estado 1
 
 		ldi unidade, 0b00010000; iniciamos o valor da unidade do contador em 0
-		ldi dezena, 0b00100000 ; iniciamos o valor da dezena do contador em 0
+		ldi dezena,  0b00100000 ; iniciamos o valor da dezena do contador em 0
 
 		;rotina do estado 1
 		s1_routine:
@@ -112,7 +124,8 @@ reset:
 			cpi count, 0 ; Caso o contador seja 0 --> O tempo que passamos aqui acabou --> vamos para o próximo estado
 			breq s2		 ; Desvio condicional para a label do próximo estado  
 			
-			;Enviamos os vetores de controle para os 5 semáforos com delay de 0.001 segundos 
+			;Enviamos os vetores de controle para os 5 semáforos com delay de 0.001 segundos
+			 
 			ldi saida, 0b10000001 
 			out PORTD, saida
 			rcall Delay
