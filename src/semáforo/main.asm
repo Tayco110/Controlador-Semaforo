@@ -64,6 +64,7 @@ Delay:
 
 ;Rotina principal do programa
 reset:
+	;pilha iniciando no final da RAM
 	ldi temp, low(RAMEND)
 	out SPL, temp
 	ldi temp, high(RAMEND)
