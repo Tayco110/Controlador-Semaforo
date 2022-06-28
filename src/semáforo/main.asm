@@ -105,7 +105,7 @@ reset:
 	;Ligando a flag de interrupção
 	sei
 	
-/*	bits:  ###### | ### 
+/*	bits:     ##### | ### 
 		semaforos Cores:
 		10000(s1) | 001 (Vermelho)
 		01000(s2) | 010 (Amarelo)
