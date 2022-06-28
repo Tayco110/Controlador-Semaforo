@@ -92,6 +92,7 @@ reset:
 	sts TCCR1A, temp ;Carregamos os bits menos significados do WGM nos bits menos significativos do TCCR1A. Nesse caso é carregado apenas o 0
 	;Tomando os dois bits mais significativos do WGM  e definindo o bit do clock select:
 	ldi temp, ((WGM>> 2) << WGM12)|(PRESCALE << CS10) ;Desloca-se de 2 do WGM (WGM >> 2 = 0b0100 >> 2 = 0b0001) depois desloca WGM12 (3), o que nos dá 0b0001 << 3 = 0b0001000.
+	; Depois é feito um OU com o PRESCALE deslocado de CS10 (vale 0), que resulta no próprio PRESCALE. O OU resulta em 0b000100 | 0b100 = 0b0001100
 	; Jogando isso no TCCR1B, definimos o clock select para 100 (nos menos sig. define o prescale) e o bit 01 (mais sig.) para o WGM no nesse registrador
 	sts TCCR1B, temp ;Configuração do contador definida. Então temos TCCR1A com seus bits do WGM setados, assim como o TCCR1B
 	
