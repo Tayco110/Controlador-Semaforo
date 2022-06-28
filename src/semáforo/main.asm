@@ -70,30 +70,37 @@ reset:
 	ldi temp, high(RAMEND)
 	out SPH, temp
 	
+	;Configurando timer e depois interrupção a cada 1 segundo
 	#define CLOCK 16.0e6 ;clock do Arduino UNO
 	#define DELAY 1 ; Definimos o intervalo entre as interrupções para 1 segundo
 
-	.equ PRESCALE = 0b100
-	.equ PRESCALE_DIV = 256
-	.equ WGM = 0b0100
-	.equ TOP = int(0.5 + ((CLOCK/PRESCALE_DIV)*DELAY))
+	.equ PRESCALE = 0b100 ; Valor que deve ser definido no clock select para definir que se utilizará o clock que será definido pelo clock com preescale.
+	.equ PRESCALE_DIV = 256 ; O prescale para se contar 1 segundo com um clock de 16 mhz é de 256
+	.equ WGM = 0b0100 ; Waveform Generation Mode: CTC (Clear time and compare) -> Utilizaremos o modo 4, que usará como top o valor em OCR1A
+	.equ TOP = int(0.5 + ((CLOCK/PRESCALE_DIV)*DELAY)) ; cálculo do top. O 0.5 vai garantir um inteiro acima da divisão dada
 	.if TOP > 65535
 	.error "TOP is out of range"
 	.endif
-
-	ldi temp, high(TOP)
+	
+	; Inicializando o valor de comparação (TOP). Para configurar o top, tem que se colocar no OCR1A. Carregamos o TOP nos 16 bits desse registrador:
+	ldi temp, high(TOP) 
 	sts OCR1AH, temp
+	;Carregando o WGM nos seus respectivos registradores:
 	ldi temp, low(TOP)
 	sts OCR1AL, temp
-	ldi temp, ((WGM&0b11) << WGM10) 
-	sts TCCR1A, temp
-	ldi temp, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
-
-	sts TCCR1B, temp 
-	lds r16, TIMSK1
-	sbr r16, 1 <<OCIE1A
-	sts TIMSK1, r16
-
+	ldi temp, ((WGM&0b11) << WGM10) ;Fazendo AND com 1 do WGM (WGM&0b11 = 0b0100 & 0b001 = 0b0000) e depois desloca do WGM10 (valor 0 no 328p, mas garante compatibilidade com outros micros)
+	sts TCCR1A, temp ;Carregamos os bits menos significados do WGM nos bits menos significativos do TCCR1A. Nesse caso é carregado apenas o 0
+	;Tomando os dois bits mais significativos do WGM  e definindo o bit do clock select:
+	ldi temp, ((WGM>> 2) << WGM12)|(PRESCALE << CS10) ;Desloca-se de 2 do WGM (WGM >> 2 = 0b0100 >> 2 = 0b0001) depois desloca WGM12 (3), o que nos dá 0b0001 << 3 = 0b0001000.
+	; Jogando isso no TCCR1B, definimos o clock select para 100 (nos menos sig. define o prescale) e o bit 01 (mais sig.) para o WGM no nesse registrador
+	sts TCCR1B, temp ;Configuração do contador definida. Então temos TCCR1A com seus bits do WGM setados, assim como o TCCR1B
+	
+	lds r16, TIMSK1 ;carregamos o espaço de dados de  timer counter 1 interrupt mask register
+	sbr r16, 1 <<OCIE1A ; habilitamos a interrupção de match com o valor do canal A. OCIEA vale um no TMSK1, então deslocamos de 1 para corresponder a esse campo. 
+	;O sbr faz uma troca de bits, evitando a alteração dos outros bits de TIMSK1, só mudando o bit 1 desse registrador.
+	sts TIMSK1, r16 ;Salvamos esse valor novo, que foi deslocado, no TIMSK1
+	; Com isso, o timer/counter está configurado para dar match/overflow a cada 1s através do valor de TOP definido no OCR1A, tratando a em OCI1A_Interrupt
+	
 	;Definimos toda a PORTD como saída
 	ldi temp, 0b11111111
 	out DDRD, temp
