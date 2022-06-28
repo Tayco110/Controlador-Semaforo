@@ -1,3 +1,11 @@
+;Universidade Federal de Alagoas
+;Instituto de Computação
+;Microcontroladores e Aplicações
+;Alunos: Aldemir Melo Rocha Filho, Darlysson Olímpio Nascimento, Sandoval da Silva Almeida Junior, Tayco Murilo Santos Rodrigues
+;Professor: Erick Barboza
+;Período: 2021.2
+
+
 ;representação do semáforo:
 
 	;## Usamos duas portas para controle, PORTD e PORTB ##
